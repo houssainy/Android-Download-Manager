@@ -25,6 +25,9 @@ public class HttpRequestManager {
 				.openConnection();
 		urlConnection.setRequestMethod("GET");
 		urlConnection.setDoOutput(true);
+		
+		
+		int x = urlConnection.getContentLength();
 		urlConnection.connect();
 
 		File sdcard = Environment.getExternalStorageDirectory();
