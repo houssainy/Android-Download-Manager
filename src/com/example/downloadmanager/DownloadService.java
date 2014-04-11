@@ -1,5 +1,7 @@
 package com.example.downloadmanager;
 
+import java.io.IOException;
+
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
@@ -38,8 +40,7 @@ public class DownloadService extends Service {
 			super.onPreExecute();
 			NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
 					context).setSmallIcon(R.drawable.ic_launcher)
-					.setContentTitle(fileName)
-					.setContentText("Downloading...");
+					.setContentTitle(fileName).setContentText("Downloading...");
 
 			mBuilder.setNumber(20);
 			NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -53,6 +54,13 @@ public class DownloadService extends Service {
 		protected Void doInBackground(String... params) {
 			// TODO Auto-generated method stub
 			System.out.println("Back ground");
+			HttpRequestManager x = new HttpRequestManager();
+			try {
+				x.download(params[0], fileName);
+			} catch (IOException e) {
+				e.printStackTrace();
+				stopSelf();
+			}
 			return null;
 		}
 
@@ -62,6 +70,7 @@ public class DownloadService extends Service {
 			super.onPostExecute(result);
 			Toast.makeText(context, "Downloading Finished...",
 					Toast.LENGTH_SHORT).show();
+			stopSelf();
 		}
 	}
 
