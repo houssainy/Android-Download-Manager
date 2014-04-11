@@ -1,15 +1,18 @@
 package com.example.downloadmanager;
 
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
 public class DownloadService extends Service {
 
 	private Context context;
+	private String fileName;
 
 	@Override
 	public void onCreate() {
@@ -20,7 +23,11 @@ public class DownloadService extends Service {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		new DownloadTask().execute(intent.getStringExtra("download-link"));
+		String link = intent.getStringExtra("download-link");
+		String[] temp = link.split("//");
+		fileName = temp[temp.length - 1];
+
+		new DownloadTask().execute(link);
 		return super.onStartCommand(intent, flags, startId);
 	}
 
@@ -29,8 +36,17 @@ public class DownloadService extends Service {
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
-			Toast.makeText(context, "Starting Downloading...",
-					Toast.LENGTH_SHORT).show();
+			NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
+					context).setSmallIcon(R.drawable.ic_launcher)
+					.setContentTitle(fileName)
+					.setContentText("Downloading...");
+
+			mBuilder.setNumber(20);
+			NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+			int mId = 1;
+			// mId allows you to update the notification later on.
+			mNotificationManager.notify(mId, mBuilder.build());
+
 		}
 
 		@Override
