@@ -11,10 +11,10 @@ import android.os.Environment;
 
 public class HttpRequestManager {
 
-	private DownloadService service;
+	private DownloadService downloadService;
 
 	public HttpRequestManager(DownloadService service) {
-		this.service = service;
+		this.downloadService = service;
 	}
 
 	public void download(String downloadUrl, String fileName)
@@ -36,12 +36,12 @@ public class HttpRequestManager {
 		byte[] buffer = new byte[1024];
 		int bufferLength = 0;
 
-		service.showStartNotification();
+		downloadService.showStartNotification();
 		while ((bufferLength = inputStream.read(buffer)) > 0) {
 			fileOutput.write(buffer, 0, bufferLength);
 		}
 		
 		fileOutput.close();
-		service.showDownloadFinishNotification();
+		downloadService.showDownloadFinishNotification();
 	}
 }
