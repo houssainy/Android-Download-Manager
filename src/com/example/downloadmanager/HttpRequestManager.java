@@ -17,9 +17,8 @@ public class HttpRequestManager {
 		this.downloadService = service;
 	}
 
-	public void download(String downloadUrl, String fileName)
-			throws IOException {
-
+	public void download(String downloadUrl) throws IOException {
+		String fileName = "";
 		URL url = new URL(downloadUrl);
 		HttpURLConnection urlConnection = (HttpURLConnection) url
 				.openConnection();
@@ -36,13 +35,13 @@ public class HttpRequestManager {
 		byte[] buffer = new byte[1024];
 		int bufferLength = 0;
 
-		downloadService.showStartNotification();
+		downloadService.showStartNotification(fileName);
 
 		while ((bufferLength = inputStream.read(buffer)) > 0) {
 			fileOutput.write(buffer, 0, bufferLength);
 		}
 
 		fileOutput.close();
-		downloadService.showDownloadFinishNotification();
+		downloadService.showDownloadFinishNotification(fileName);
 	}
 }

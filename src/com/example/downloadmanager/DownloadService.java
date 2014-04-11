@@ -16,7 +16,6 @@ public class DownloadService extends Service {
 	private String tag = "DownloadService";
 
 	private Service service;
-	private String fileName;
 
 	private static int notificationID = 0;
 	private int nId;
@@ -33,23 +32,18 @@ public class DownloadService extends Service {
 		notificationID++;
 		nId = notificationID;
 
-		String link = intent.getStringExtra("download-link");
-		String[] temp = link.split("//");
-		fileName = temp[temp.length - 1];
-
-		new DownloadTask().execute(link);
+		new DownloadTask().execute(intent.getStringExtra("download-link"));
 		return super.onStartCommand(intent, flags, startId);
 	}
 
 	/**
 	 * Show new Notification.
 	 */
-	public void showStartNotification() {
+	public void showStartNotification(String fileName) {
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
 				service).setSmallIcon(R.drawable.ic_launcher)
 				.setContentTitle(fileName).setContentText("Downloading...");
 
-		mBuilder.setNumber(20);
 		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
 		// mId allows you to update the notification later on.
@@ -59,14 +53,14 @@ public class DownloadService extends Service {
 	/**
 	 * 
 	 */
-	public void updateProgress(){
-		
+	public void updateProgress(int percent) {
+
 	}
-	
+
 	/**
 	 * Update notification by End message
 	 */
-	public void showDownloadFinishNotification() {
+	public void showDownloadFinishNotification(String fileName) {
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
 				service).setSmallIcon(R.drawable.ic_launcher)
 				.setContentTitle(fileName).setContentText("Downloaded");
@@ -84,8 +78,8 @@ public class DownloadService extends Service {
 			Log.d(tag, "Stareted doInbackgroud");
 
 			try {
-				new HttpRequestManager((DownloadService) service).download(
-						params[0], fileName);
+				new HttpRequestManager((DownloadService) service)
+						.download(params[0]);
 			} catch (IOException e) {
 				e.printStackTrace();
 				stopSelf();
