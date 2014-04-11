@@ -8,19 +8,32 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity" >
 
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/hello_world" />
-
     <Button
-        android:id="@+id/download"
+        android:id="@+id/download_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="57dp"
-        android:layout_toRightOf="@+id/textView1"
-        android:text="Button" />
+        android:layout_alignLeft="@+id/download_url"
+        android:layout_alignRight="@+id/download_url"
+        android:layout_centerVertical="true"
+        android:text="@string/download" />
+
+    <EditText
+        android:id="@+id/download_url"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/download_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="32dp"
+        android:ems="10"
+        android:inputType="textUri" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/download_url"
+        android:layout_alignLeft="@+id/download_url"
+        android:layout_marginBottom="18dp"
+        android:text="@string/url_"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
 </RelativeLayout>
