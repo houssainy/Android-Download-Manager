@@ -41,6 +41,9 @@ public class DownloadService extends Service {
 		return super.onStartCommand(intent, flags, startId);
 	}
 
+	/**
+	 * Show new Notification.
+	 */
 	public void showStartNotification() {
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
 				service).setSmallIcon(R.drawable.ic_launcher)
@@ -53,6 +56,16 @@ public class DownloadService extends Service {
 		mNotificationManager.notify(nId, mBuilder.build());
 	}
 
+	/**
+	 * 
+	 */
+	public void updateProgress(){
+		
+	}
+	
+	/**
+	 * Update notification by End message
+	 */
 	public void showDownloadFinishNotification() {
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
 				service).setSmallIcon(R.drawable.ic_launcher)
