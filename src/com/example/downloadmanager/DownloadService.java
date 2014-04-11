@@ -9,22 +9,30 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 import android.widget.Toast;
 
 public class DownloadService extends Service {
+	private String tag = "DownloadService";
 
-	private Context context;
+	private Service service;
 	private String fileName;
+
+	private static int notificationID = 0;
+	private int nId;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 
-		context = this;
+		service = this;
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+		notificationID++;
+		nId = notificationID;
+
 		String link = intent.getStringExtra("download-link");
 		String[] temp = link.split("//");
 		fileName = temp[temp.length - 1];
@@ -33,30 +41,38 @@ public class DownloadService extends Service {
 		return super.onStartCommand(intent, flags, startId);
 	}
 
+	public void showStartNotification() {
+		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
+				service).setSmallIcon(R.drawable.ic_launcher)
+				.setContentTitle(fileName).setContentText("Downloading...");
+
+		mBuilder.setNumber(20);
+		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+		// mId allows you to update the notification later on.
+		mNotificationManager.notify(nId, mBuilder.build());
+	}
+
+	public void showDownloadFinishNotification() {
+		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
+				service).setSmallIcon(R.drawable.ic_launcher)
+				.setContentTitle(fileName).setContentText("Downloaded");
+
+		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+		// mId allows you to update the notification later on.
+		mNotificationManager.notify(nId, mBuilder.build());
+	}
+
 	private class DownloadTask extends AsyncTask<String, Void, Void> {
 
 		@Override
-		protected void onPreExecute() {
-			super.onPreExecute();
-			NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
-					context).setSmallIcon(R.drawable.ic_launcher)
-					.setContentTitle(fileName).setContentText("Downloading...");
-
-			mBuilder.setNumber(20);
-			NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-			int mId = 1;
-			// mId allows you to update the notification later on.
-			mNotificationManager.notify(mId, mBuilder.build());
-
-		}
-
-		@Override
 		protected Void doInBackground(String... params) {
-			// TODO Auto-generated method stub
-			System.out.println("Back ground");
-			HttpRequestManager x = new HttpRequestManager();
+			Log.d(tag, "Stareted doInbackgroud");
+
 			try {
-				x.download(params[0], fileName);
+				new HttpRequestManager((DownloadService) service).download(
+						params[0], fileName);
 			} catch (IOException e) {
 				e.printStackTrace();
 				stopSelf();
@@ -66,9 +82,8 @@ public class DownloadService extends Service {
 
 		@Override
 		protected void onPostExecute(Void result) {
-			// TODO Auto-generated method stub
 			super.onPostExecute(result);
-			Toast.makeText(context, "Downloading Finished...",
+			Toast.makeText(service, "Downloading Finished...",
 					Toast.LENGTH_SHORT).show();
 			stopSelf();
 		}

@@ -11,6 +11,12 @@ import android.os.Environment;
 
 public class HttpRequestManager {
 
+	private DownloadService service;
+
+	public HttpRequestManager(DownloadService service) {
+		this.service = service;
+	}
+
 	public void download(String downloadUrl, String fileName)
 			throws IOException {
 
@@ -26,14 +32,16 @@ public class HttpRequestManager {
 
 		FileOutputStream fileOutput = new FileOutputStream(file);
 		InputStream inputStream = urlConnection.getInputStream();
-		
+
 		byte[] buffer = new byte[1024];
 		int bufferLength = 0;
 
+		service.showStartNotification();
 		while ((bufferLength = inputStream.read(buffer)) > 0) {
 			fileOutput.write(buffer, 0, bufferLength);
 		}
+		
 		fileOutput.close();
-
+		service.showDownloadFinishNotification();
 	}
 }
