@@ -55,7 +55,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 			super.onPostExecute(result);
 		}
-
 	}
 
 }
