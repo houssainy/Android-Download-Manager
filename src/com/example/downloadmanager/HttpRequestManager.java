@@ -34,6 +34,7 @@ public class HttpRequestManager {
 		        fileOutput.write(buffer, 0, bufferLength);
 		    }
 		    fileOutput.close();
+		    
 
 		} catch (MalformedURLException e) {
 		        e.printStackTrace();
