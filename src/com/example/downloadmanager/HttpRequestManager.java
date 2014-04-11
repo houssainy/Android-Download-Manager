@@ -37,10 +37,11 @@ public class HttpRequestManager {
 		int bufferLength = 0;
 
 		downloadService.showStartNotification();
+
 		while ((bufferLength = inputStream.read(buffer)) > 0) {
 			fileOutput.write(buffer, 0, bufferLength);
 		}
-		
+
 		fileOutput.close();
 		downloadService.showDownloadFinishNotification();
 	}
