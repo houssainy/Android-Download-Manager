@@ -24,10 +24,11 @@ public class DownloadService extends Service {
 	private static int notificationID = 0;
 	private int nId;
 
+	private int lastPercent = 0;
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
-
 		service = this;
 	}
 
@@ -42,7 +43,6 @@ public class DownloadService extends Service {
 			Toast.makeText(this, "No Internet access!", Toast.LENGTH_LONG)
 					.show();
 			stopSelf();
-
 		}
 		return super.onStartCommand(intent, flags, startId);
 	}
@@ -54,7 +54,8 @@ public class DownloadService extends Service {
 		mBuilder = new NotificationCompat.Builder(service)
 				.setSmallIcon(R.drawable.ic_launcher).setContentTitle(fileName)
 				.setContentText("Download in Progress")
-				.setProgress(100, 0, false).setContentInfo("0%");
+				.setProgress(100, 0, false).setContentInfo("0%")
+				.setOngoing(true);
 
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -62,13 +63,10 @@ public class DownloadService extends Service {
 		mNotificationManager.notify(nId, mBuilder.build());
 	}
 
-	private int lastPercent = 0;
-
 	/**
 	 * To update progress bar
 	 */
 	public void updateProgress(int percent) {
-		Log.d(tag, "" + percent);
 		if (lastPercent != percent) {
 			mBuilder.setProgress(100, percent, false);
 			mBuilder.setContentInfo(percent + "%");
@@ -81,9 +79,16 @@ public class DownloadService extends Service {
 	/**
 	 * Update notification by End message
 	 */
-	private void showDownloadFinishNotification() {
-		mBuilder.setContentText("Download Complete");
+	public void showDownloadFinishNotification(String fileName) {
+		mNotificationManager.cancel(nId);
 
+		mBuilder = new NotificationCompat.Builder(service).setSmallIcon(
+				R.drawable.ic_launcher).setContentTitle(
+				fileName ).setContentText("Download Complete");
+
+		notificationID++;
+		nId = notificationID;
+		
 		// mId allows you to update the notification later on.
 		mNotificationManager.notify(nId, mBuilder.build());
 	}
@@ -113,7 +118,6 @@ public class DownloadService extends Service {
 			case Util.OK:
 				Toast.makeText(service, "Download Complete", Toast.LENGTH_SHORT)
 						.show();
-				showDownloadFinishNotification();
 				break;
 
 			case Util.ERROR:

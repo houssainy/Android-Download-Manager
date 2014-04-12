@@ -53,6 +53,7 @@ public class HttpRequestManager {
 				}
 
 				fileOutput.close();
+				downloadService.showDownloadFinishNotification(fileName);
 			}
 
 		} catch (IOException e) {
