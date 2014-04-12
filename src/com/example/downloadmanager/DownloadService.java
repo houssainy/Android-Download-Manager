@@ -1,14 +1,19 @@
 package com.example.downloadmanager;
 
+import java.io.File;
+
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 public class DownloadService extends Service {
@@ -27,6 +32,7 @@ public class DownloadService extends Service {
 	public void onCreate() {
 		super.onCreate();
 		service = this;
+		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 	}
 
 	@Override
@@ -59,8 +65,6 @@ public class DownloadService extends Service {
 				.setProgress(100, 0, false).setContentInfo("0%")
 				.setOngoing(true);
 
-		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
 		// mId allows you to update the notification later on.
 		mNotificationManager.notify(nId, mBuilder.build());
 	}
@@ -78,23 +82,69 @@ public class DownloadService extends Service {
 		}
 	}
 
-	/**
-	 * Update notification by End message
-	 */
-	public void showDownloadFinishNotification(String fileName, int nId) {
-		mNotificationManager.cancel(nId);
+	public void showFileAlreadyExistNotfication(File file, int nId) {
 
 		mBuilder = new NotificationCompat.Builder(service)
-				.setSmallIcon(R.drawable.ic_launcher).setContentTitle(fileName)
-				.setContentText("Download Complete");
+				.setSmallIcon(R.drawable.ic_launcher)
+				.setContentTitle(file.getName())
+				.setContentText("File Already Exist.");
 
-		// notificationID++;
-		// nId = notificationID;
+		// Pending intent to be opened when the notification pressed
+		PendingIntent notifyIntent = PendingIntent.getActivity(this, 0,
+				openFile(file), PendingIntent.FLAG_UPDATE_CURRENT);
+
+		// Puts the PendingIntent into the notification builder
+		mBuilder.setContentIntent(notifyIntent);
+		mBuilder.setAutoCancel(true);
 
 		// mId allows you to update the notification later on.
 		mNotificationManager.notify(nId, mBuilder.build());
 	}
 
+	/**
+	 * Update notification by End message
+	 */
+	public void showDownloadFinishNotification(File file, int nId) {
+		mNotificationManager.cancel(nId);
+
+		mBuilder = new NotificationCompat.Builder(service)
+				.setSmallIcon(R.drawable.ic_launcher)
+				.setContentTitle(file.getName())
+				.setContentText("Download Complete");
+
+		// Pending intent to be opened when the notification pressed
+		PendingIntent notifyIntent = PendingIntent.getActivity(this, 0,
+				openFile(file), PendingIntent.FLAG_UPDATE_CURRENT);
+
+		// Puts the PendingIntent into the notification builder
+		mBuilder.setContentIntent(notifyIntent);
+		mBuilder.setAutoCancel(true);
+
+		// mId allows you to update the notification later on.
+		mNotificationManager.notify(nId, mBuilder.build());
+	}
+
+	/**
+	 * Open file using its extension
+	 * */
+	public Intent openFile(File file) {
+		MimeTypeMap map = MimeTypeMap.getSingleton();
+		String ext = MimeTypeMap.getFileExtensionFromUrl(file.getName());
+		String type = map.getMimeTypeFromExtension(ext);
+
+		if (type == null)
+			type = "*/*";
+
+		Intent resultIntent = new Intent(Intent.ACTION_VIEW);
+		Uri data = Uri.fromFile(file);
+		resultIntent.setDataAndType(data, type);
+		return resultIntent;
+	}
+
+	/**
+	 * 
+	 * @return check if there is Internet access!
+	 */
 	private boolean isNetworkAvailable() {
 		ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo activeNetworkInfo = connectivityManager
@@ -106,6 +156,7 @@ public class DownloadService extends Service {
 	 * 
 	 * @author Mohamed
 	 * 
+	 *         AsyncTask to manage download files.
 	 */
 	private class DownloadTask extends AsyncTask<String, Void, Integer> {
 
@@ -129,6 +180,7 @@ public class DownloadService extends Service {
 						Toast.LENGTH_SHORT).show();
 				break;
 			case Util.FILE_ALREADY_EXIST:
+
 				Toast.makeText(service, "File Already Exist!",
 						Toast.LENGTH_SHORT).show();
 				break;

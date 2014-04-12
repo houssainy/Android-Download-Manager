@@ -21,6 +21,7 @@ public class HttpRequestManager {
 
 	public int download(String downloadUrl) {
 		try {
+			downloadUrl = "http://www.soundjay.com/button/beep-01a.mp3";
 			URL url = new URL(downloadUrl);
 			int indexStart = downloadUrl.lastIndexOf('/');
 			String fileName = downloadUrl.substring(indexStart + 1);
@@ -29,6 +30,8 @@ public class HttpRequestManager {
 			File file = new File(sdcard, fileName);
 
 			if (file.exists()) {
+				downloadService.showFileAlreadyExistNotfication(file,
+						downloadId);
 				return Util.FILE_ALREADY_EXIST;
 			} else {
 				HttpURLConnection urlConnection = (HttpURLConnection) url
@@ -54,8 +57,8 @@ public class HttpRequestManager {
 				}
 
 				fileOutput.close();
-				downloadService.showDownloadFinishNotification(fileName,
-						downloadId);
+				downloadService
+						.showDownloadFinishNotification(file, downloadId);
 			}
 
 		} catch (IOException e) {
