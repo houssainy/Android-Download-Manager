@@ -21,7 +21,6 @@ public class HttpRequestManager {
 
 	public int download(String downloadUrl) {
 		try {
-			downloadUrl = "http://www.soundjay.com/button/beep-01a.mp3";
 			URL url = new URL(downloadUrl);
 			int indexStart = downloadUrl.lastIndexOf('/');
 			String fileName = downloadUrl.substring(indexStart + 1);
