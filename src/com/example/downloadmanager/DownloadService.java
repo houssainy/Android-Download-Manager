@@ -1,11 +1,11 @@
 package com.example.downloadmanager;
 
-import java.io.IOException;
-
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -33,10 +33,17 @@ public class DownloadService extends Service {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		notificationID++;
-		nId = notificationID;
+		if (isNetworkAvailable()) {
+			notificationID++;
+			nId = notificationID;
 
-		new DownloadTask().execute(intent.getStringExtra("download-link"));
+			new DownloadTask().execute(intent.getStringExtra("download-link"));
+		} else {
+			Toast.makeText(this, "No Internet access!", Toast.LENGTH_LONG)
+					.show();
+			stopSelf();
+
+		}
 		return super.onStartCommand(intent, flags, startId);
 	}
 
@@ -46,7 +53,8 @@ public class DownloadService extends Service {
 	public void showStartNotification(String fileName) {
 		mBuilder = new NotificationCompat.Builder(service)
 				.setSmallIcon(R.drawable.ic_launcher).setContentTitle(fileName)
-				.setContentText("Downloading...");
+				.setContentText("Download in Progress")
+				.setProgress(100, 0, false).setContentInfo("0%");
 
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -54,44 +62,72 @@ public class DownloadService extends Service {
 		mNotificationManager.notify(nId, mBuilder.build());
 	}
 
+	private int lastPercent = 0;
+
 	/**
-	 * 
+	 * To update progress bar
 	 */
 	public void updateProgress(int percent) {
 		Log.d(tag, "" + percent);
+		if (lastPercent != percent) {
+			mBuilder.setProgress(100, percent, false);
+			mBuilder.setContentInfo(percent + "%");
+
+			lastPercent = percent;
+			mNotificationManager.notify(nId, mBuilder.build());
+		}
 	}
 
 	/**
 	 * Update notification by End message
 	 */
-	public void showDownloadFinishNotification(String fileName) {
-		mBuilder.setContentText("Downloaded");
+	private void showDownloadFinishNotification() {
+		mBuilder.setContentText("Download Complete");
 
 		// mId allows you to update the notification later on.
 		mNotificationManager.notify(nId, mBuilder.build());
 	}
 
-	private class DownloadTask extends AsyncTask<String, Void, Void> {
+	private boolean isNetworkAvailable() {
+		ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo activeNetworkInfo = connectivityManager
+				.getActiveNetworkInfo();
+		return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+	}
+
+	private class DownloadTask extends AsyncTask<String, Void, Integer> {
 
 		@Override
-		protected Void doInBackground(String... params) {
+		protected Integer doInBackground(String... params) {
 			Log.d(tag, "Stareted doInbackgroud");
 
-			try {
-				new HttpRequestManager((DownloadService) service)
-						.download(params[0]);
-			} catch (IOException e) {
-				e.printStackTrace();
-				stopSelf();
-			}
-			return null;
+			return new HttpRequestManager((DownloadService) service)
+					.download(params[0]);
+
 		}
 
 		@Override
-		protected void onPostExecute(Void result) {
+		protected void onPostExecute(Integer result) {
 			super.onPostExecute(result);
-			Toast.makeText(service, "Downloading Finished...",
-					Toast.LENGTH_SHORT).show();
+			switch (result) {
+			case Util.OK:
+				Toast.makeText(service, "Download Complete", Toast.LENGTH_SHORT)
+						.show();
+				showDownloadFinishNotification();
+				break;
+
+			case Util.ERROR:
+				Toast.makeText(service, "Oops, something went wrong!",
+						Toast.LENGTH_SHORT).show();
+				break;
+			case Util.FILE_ALREADY_EXIST:
+				Toast.makeText(service, "File Already Exist!",
+						Toast.LENGTH_SHORT).show();
+				break;
+			default:
+				break;
+			}
+
 			stopSelf();
 		}
 	}

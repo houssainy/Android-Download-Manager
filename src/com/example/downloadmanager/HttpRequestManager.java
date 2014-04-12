@@ -17,37 +17,48 @@ public class HttpRequestManager {
 		this.downloadService = service;
 	}
 
-	public void download(String downloadUrl) throws IOException {
-		String fileName = "Ch06+-+Decision.ppt";
-		URL url = new URL(
-				"http://download1156.mediafire.com/208dd21218lg/3qql3l4qkn95obp/Ch06+-+Decision.ppt");
-		HttpURLConnection urlConnection = (HttpURLConnection) url
-				.openConnection();
-		urlConnection.setRequestMethod("GET");
+	public int download(String downloadUrl) {
+		try {
+			downloadUrl = "http://download1179.mediafire.com/fu9ten76bfcg/nhfrnnnmjks96rq/Compilers_Lecture_01.pdf";
+			URL url = new URL(downloadUrl);
+			int indexStart = downloadUrl.lastIndexOf('/');
+			String fileName = downloadUrl.substring(indexStart + 1);
 
-		urlConnection.connect();
-		int fileSize = urlConnection.getContentLength();
+			File sdcard = Environment.getExternalStorageDirectory();
+			File file = new File(sdcard, fileName);
 
-		File sdcard = Environment.getExternalStorageDirectory();
-		File file = new File(sdcard, fileName);
-		
-		FileOutputStream fileOutput = new FileOutputStream(file);
-		InputStream inputStream = urlConnection.getInputStream();
+			if (file.exists()) {
+				return Util.FILE_ALREADY_EXIST;
+			} else {
+				HttpURLConnection urlConnection = (HttpURLConnection) url
+						.openConnection();
+				urlConnection.setRequestMethod("GET");
+				urlConnection.connect();
+				int fileSize = urlConnection.getContentLength();
+				
+				FileOutputStream fileOutput = new FileOutputStream(file);
+				InputStream inputStream = urlConnection.getInputStream();
 
-		byte[] buffer = new byte[1024];
-		int bufferLength = 0;
+				byte[] buffer = new byte[1024];
+				int bufferLength = 0;
 
-		downloadService.showStartNotification(fileName);
+				downloadService.showStartNotification(fileName);
 
-		int currentRead = 0;
-		while ((bufferLength = inputStream.read(buffer)) > 0) {
-			fileOutput.write(buffer, 0, bufferLength);
-			currentRead += bufferLength;
-			downloadService
-					.updateProgress((int) ((currentRead*1.0 / fileSize * 1.0 )* 100));
+				int currentRead = 0;
+				while ((bufferLength = inputStream.read(buffer)) > 0) {
+					fileOutput.write(buffer, 0, bufferLength);
+					currentRead += bufferLength;
+					downloadService.updateProgress((int) ((currentRead * 1.0
+							/ fileSize * 1.0) * 100));
+				}
+
+				fileOutput.close();
+			}
+
+		} catch (IOException e) {
+			return Util.ERROR;
 		}
 
-		fileOutput.close();
-		downloadService.showDownloadFinishNotification(fileName);
+		return Util.OK;
 	}
 }
