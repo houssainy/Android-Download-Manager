@@ -17,6 +17,10 @@ public class DownloadService extends Service {
 
 	private Service service;
 
+	// Notification Tools
+	private NotificationCompat.Builder mBuilder;
+	private NotificationManager mNotificationManager;
+
 	private static int notificationID = 0;
 	private int nId;
 
@@ -40,11 +44,11 @@ public class DownloadService extends Service {
 	 * Show new Notification.
 	 */
 	public void showStartNotification(String fileName) {
-		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
-				service).setSmallIcon(R.drawable.ic_launcher)
-				.setContentTitle(fileName).setContentText("Downloading...");
+		mBuilder = new NotificationCompat.Builder(service)
+				.setSmallIcon(R.drawable.ic_launcher).setContentTitle(fileName)
+				.setContentText("Downloading...");
 
-		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
 		// mId allows you to update the notification later on.
 		mNotificationManager.notify(nId, mBuilder.build());
@@ -54,18 +58,14 @@ public class DownloadService extends Service {
 	 * 
 	 */
 	public void updateProgress(int percent) {
-
+		Log.d(tag, "" + percent);
 	}
 
 	/**
 	 * Update notification by End message
 	 */
 	public void showDownloadFinishNotification(String fileName) {
-		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
-				service).setSmallIcon(R.drawable.ic_launcher)
-				.setContentTitle(fileName).setContentText("Downloaded");
-
-		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		mBuilder.setContentText("Downloaded");
 
 		// mId allows you to update the notification later on.
 		mNotificationManager.notify(nId, mBuilder.build());
