@@ -9,11 +9,9 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 import android.widget.Toast;
 
 public class DownloadService extends Service {
-	private String tag = "DownloadService";
 
 	private Service service;
 
@@ -22,7 +20,6 @@ public class DownloadService extends Service {
 	private NotificationManager mNotificationManager;
 
 	private static int notificationID = 0;
-	private int nId;
 
 	private int lastPercent = 0;
 
@@ -35,9 +32,6 @@ public class DownloadService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		if (isNetworkAvailable()) {
-			notificationID++;
-			nId = notificationID;
-
 			new DownloadTask().execute(intent.getStringExtra("download-link"));
 		} else {
 			Toast.makeText(this, "No Internet access!", Toast.LENGTH_LONG)
@@ -48,9 +42,17 @@ public class DownloadService extends Service {
 	}
 
 	/**
+	 * Must Override this method and return null to avoid Bind Service
+	 */
+	@Override
+	public IBinder onBind(Intent intent) {
+		return null;
+	}
+
+	/**
 	 * Show new Notification.
 	 */
-	public void showStartNotification(String fileName) {
+	public void showStartNotification(String fileName, int nId) {
 		mBuilder = new NotificationCompat.Builder(service)
 				.setSmallIcon(R.drawable.ic_launcher).setContentTitle(fileName)
 				.setContentText("Download in Progress")
@@ -66,7 +68,7 @@ public class DownloadService extends Service {
 	/**
 	 * To update progress bar
 	 */
-	public void updateProgress(int percent) {
+	public void updateProgress(int percent, int nId) {
 		if (lastPercent != percent) {
 			mBuilder.setProgress(100, percent, false);
 			mBuilder.setContentInfo(percent + "%");
@@ -79,16 +81,16 @@ public class DownloadService extends Service {
 	/**
 	 * Update notification by End message
 	 */
-	public void showDownloadFinishNotification(String fileName) {
+	public void showDownloadFinishNotification(String fileName, int nId) {
 		mNotificationManager.cancel(nId);
 
-		mBuilder = new NotificationCompat.Builder(service).setSmallIcon(
-				R.drawable.ic_launcher).setContentTitle(
-				fileName ).setContentText("Download Complete");
+		mBuilder = new NotificationCompat.Builder(service)
+				.setSmallIcon(R.drawable.ic_launcher).setContentTitle(fileName)
+				.setContentText("Download Complete");
 
-		notificationID++;
-		nId = notificationID;
-		
+		// notificationID++;
+		// nId = notificationID;
+
 		// mId allows you to update the notification later on.
 		mNotificationManager.notify(nId, mBuilder.build());
 	}
@@ -100,15 +102,17 @@ public class DownloadService extends Service {
 		return activeNetworkInfo != null && activeNetworkInfo.isConnected();
 	}
 
+	/**
+	 * 
+	 * @author Mohamed
+	 * 
+	 */
 	private class DownloadTask extends AsyncTask<String, Void, Integer> {
 
 		@Override
 		protected Integer doInBackground(String... params) {
-			Log.d(tag, "Stareted doInbackgroud");
-
-			return new HttpRequestManager((DownloadService) service)
-					.download(params[0]);
-
+			return new HttpRequestManager((DownloadService) service,
+					notificationID++).download(params[0]);
 		}
 
 		@Override
@@ -136,11 +140,4 @@ public class DownloadService extends Service {
 		}
 	}
 
-	/**
-	 * Must Override this method and return null to avoid Bind Service
-	 */
-	@Override
-	public IBinder onBind(Intent intent) {
-		return null;
-	}
 }
