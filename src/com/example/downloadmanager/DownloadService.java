@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -67,6 +68,8 @@ public class DownloadService extends Service {
 
 		// mId allows you to update the notification later on.
 		mNotificationManager.notify(nId, mBuilder.build());
+
+		playSoundAlert();
 	}
 
 	/**
@@ -99,6 +102,8 @@ public class DownloadService extends Service {
 
 		// mId allows you to update the notification later on.
 		mNotificationManager.notify(nId, mBuilder.build());
+
+		playSoundAlert();
 	}
 
 	/**
@@ -122,6 +127,8 @@ public class DownloadService extends Service {
 
 		// mId allows you to update the notification later on.
 		mNotificationManager.notify(nId, mBuilder.build());
+
+		playSoundAlert();
 	}
 
 	/**
@@ -150,6 +157,12 @@ public class DownloadService extends Service {
 		NetworkInfo activeNetworkInfo = connectivityManager
 				.getActiveNetworkInfo();
 		return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+	}
+
+	private void playSoundAlert() {
+		MediaPlayer alert = MediaPlayer.create(this, R.raw.alert);
+		alert.start();
+
 	}
 
 	/**
